@@ -1,0 +1,63 @@
+services:
+   
+  source_db:
+    image: postgres:13
+    container_name: source_db
+    environment:
+      POSTGRES_USER: src_db_uname
+      POSTGRES_PASSWORD: src_db_pass
+      POSTGRES_DB: source_db
+    volumes:
+      - postgres_src_vol:/var/lib/postgres/data
+      - ./initdb_postgres:/docker-entrypoint-initdb.d
+    restart: always
+    ports:
+      - "54321:5432"
+    networks:
+      - db_network
+
+  clickhouse:
+    build:
+      context: .
+      dockerfile: ./initdb_click/Dockerfile
+    container_name: clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: click_pass
+    volumes:
+     - clickhouse_vol:/var/lib/clickhouse
+     - ./initdb_click:/docker-entrypoint-initdb.d
+    restart: always
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - db_network
+
+  sellers_api:
+    env_file:
+      - secrets.env
+    build:
+      context: .
+      dockerfile: ./sellers_api/Dockerfile
+    container_name: sellers_api
+    volumes:
+      - ./sellers_api/app:/code/app
+    restart: on-failure
+    ports:
+      - "80:80"
+    networks:
+      - db_network
+      
+networks:
+  db_network:
+    external:
+      name: app_network
+volumes:
+  postgres_src_vol:
+  clickhouse_vol:

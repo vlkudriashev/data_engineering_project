@@ -1,0 +1,4 @@
+pandas==2.0.3
+psycopg2-binary==2.9.9
+numpy==1.24.4
+clickhouse-driver[lz4]==0.2.6

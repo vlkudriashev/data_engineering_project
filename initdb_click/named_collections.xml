@@ -1,0 +1,12 @@
+<clickhouse>
+	<named_collections> 
+		<pg_source_creds>
+			<host>source_db</host>
+			<port>5432</port>
+			<user>src_db_uname</user>
+			<password>src_db_pass</password>
+			<database>source_db</database>
+			<schema>source</schema>
+		</pg_source_creds>
+	</named_collections>
+</clickhouse>
