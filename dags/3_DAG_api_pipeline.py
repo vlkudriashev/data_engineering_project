@@ -31,14 +31,6 @@ with DAG(
 		},
 		provide_context=True
 	)
-
-
-	# Задаём значения для конфигурации дальнейших SQL-запросов
-	string_args = {
-		'table': 'sellers',
-		'ts_column': 'insertion_ts',
-		'job_time': '{{ data_interval_start.to_datetime_string() }}'
-	}
 		
 	# Вставляем данные из Стейдж таблиц в Таргет и распаковываем
 	# значения массивов в отдельные столбцы
@@ -46,10 +38,6 @@ with DAG(
 		task_id=f"stage_api_to_target",
 		clickhouse_conn_id='CLICK_TARGET',
 		sql=(
-			'''
-			DELETE FROM target_db.sellers
-			WHERE insertion_ts = '{job_time}'
-			'''.format(**string_args),
 			'''
 			INSERT INTO target_db.sellers
 			SELECT
@@ -60,8 +48,8 @@ with DAG(
 			FROM stage_db.sellers
 				ARRAY JOIN seller_info
 			WHERE 
-				{ts_column} = '{job_time}'
-			'''.format(**string_args)
+				insertion_ts = '{{ data_interval_start.to_datetime_string() }}'
+			'''
 		),
 		do_xcom_push=False
 	)
